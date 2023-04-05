@@ -12,7 +12,7 @@ provider:
          Resource: "*"
        - Effect: "Allow"
          Action:
-           - 'dynamodb:*'
+           - 's3:*'
          Resource: "*" 
 
 resources:
@@ -28,6 +28,7 @@ resources:
               AllowedMethods:
                 - GET
                 - PUT
+                - DELETE
               AllowedOrigins:
                 - '*'
 
@@ -38,8 +39,9 @@ resources:
         PolicyDocument:
           Statement:
             - Action:
-                - s3:PutObject
                 - s3:GetObject
+                - s3:PutObject
+                - s3:DeleteObject
               Resource:
                 - arn:aws:s3:::zurag-leap3/*
               Effect: Allow
@@ -53,15 +55,22 @@ functions:
     events:
       - http: 
           path: post
-          method: post
-          cors: true
+          method: POST
+          cors: 
+            origin :"http://localhost:3000"
+          headers:
+              - "*"
   function2:
-     handler: index.SecondFunction
+     handler: index.ListBucket
      events:
-      - s3:
-          bucket: zurag-leap3
-          event: s3:ObjectCreated:*
-          existing: true
+      # - s3:
+      #     bucket: zurag-leap3
+      #     event: s3:ObjectCreated:*
+      #     existing: true
+      - http:
+          path: listBucket
+          method: GET
+          cors: true
 #   function:
 #     handler: index.TestFunction
 #     events:
@@ -78,7 +87,7 @@ functions:
 #     #       cors: true
 #   function3:
 #     handler: index.TimeFunction
-#     events:
+#     events
 #       - http: 
 #           path: timepost
 #           method: post

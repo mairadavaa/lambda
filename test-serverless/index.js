@@ -273,7 +273,7 @@ module.exports.PhotoFunction = async (event) => {
     ContentType: type
   };
 
-  const result = await s3.getSignedUrl('putObject', params)
+  const result = s3.getSignedUrl('putObject', params)
 
   return {
     statusCode: 200,
@@ -286,6 +286,25 @@ module.exports.PhotoFunction = async (event) => {
     }),
   };
 }
-module.exports.SecondFunction = async (event) => {
-  console.log(event)
+module.exports.ListBucket = async (event) => {
+  const bucketName = "zurag-leap3"
+  const params = {
+    Bucket: bucketName,
+
+  };
+  const result = await s3.listObjectsV2(params).promise()
+  //https://bucketName.s3.amazonaws.com/download-2.jpg
+  const links = (result.Contents.map((content) => {
+    return `https://${bucketName}.s3.amazonaws.com/${content.Key}`
+  }));
+  return {
+    statusCode: 200,
+    headers: {
+      'Access-Control-Allow-Origin': '*',
+      "Access-Control-Allow-Headers": '*'
+    },
+    body: JSON.stringify({
+      message: links,
+    }),
+  };
 }
