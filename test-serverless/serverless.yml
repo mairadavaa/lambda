@@ -1,0 +1,101 @@
+service: test-serverless
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: nodejs16.x
+  iam: 
+    role:
+     statements:
+       - Effect: "Allow"
+         Action: "lambda:InvokeFunction"
+         Resource: "*"
+       - Effect: "Allow"
+         Action:
+           - 'dynamodb:*'
+         Resource: "*" 
+
+resources:
+  Resources:
+    S3Bucket:
+      Type: "AWS::S3::Bucket"
+      Properties:
+        BucketName: zurag-leap3
+        CorsConfiguration:
+          CorsRules:
+            - AllowedHeaders: 
+                - '*'
+              AllowedMethods:
+                - GET
+                - PUT
+              AllowedOrigins:
+                - '*'
+
+    BucketPolicy:
+      Type: AWS::S3::BucketPolicy
+      Properties:
+        Bucket: !Ref S3Bucket
+        PolicyDocument:
+          Statement:
+            - Action:
+                - s3:PutObject
+                - s3:GetObject
+              Resource:
+                - arn:aws:s3:::zurag-leap3/*
+              Effect: Allow
+              Principal: "*"
+      
+ 
+
+functions:
+  function1:
+    handler: index.PhotoFunction
+    events:
+      - http: 
+          path: post
+          method: post
+          cors: true
+  function2:
+     handler: index.SecondFunction
+     events:
+      - s3:
+          bucket: zurag-leap3
+          event: s3:ObjectCreated:*
+          existing: true
+#   function:
+#     handler: index.TestFunction
+#     events:
+#       - http: 
+#           path: post
+#           method: post
+#           cors: true
+#   function2:
+#     handler: index.SecondFunction
+#     # events:
+#     #   - http: 
+#     #       path: get
+#     #       method: get
+#     #       cors: true
+#   function3:
+#     handler: index.TimeFunction
+#     events:
+#       - http: 
+#           path: timepost
+#           method: post
+#           cors:  
+#             origin: "http://localhost:3000/"
+#             headers:
+#               - "*"
+#             allowCredentials: true
+
+  # secondFunction:
+  #   handler: index.secondFunction
+  #   events:
+  #    - stream:
+  #       types: dynamodb
+  #       arn: arn:aws:dynamodb:us-east-1:347935611562:table/login/stream/2023-03-28T03:10:06.815
+  #       batchSize: 10
+  #       startingPosition: LATEST
+
+
+  
